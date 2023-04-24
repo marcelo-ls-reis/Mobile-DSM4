@@ -6,17 +6,17 @@ import { Keyboard } from "react-native";
 
 export default class Main extends Component{
 
-    state = {
+    state = { // state is an object
         newUser: '',
         users: [],
     };   
     
-    handleAddUser = async () => {
+    handleAddUser = async () => { 
         const { users, newUser } = this.state;
 
-        const response = await api.get(`/users/${newUser}`);
+        const response = await api.get(`/users/${newUser}`); 
 
-        const data = {
+        const data = { // data is an object
             name: response.data.name,
             login: response.data.login,
             bio: response.data.bio,
@@ -24,7 +24,7 @@ export default class Main extends Component{
         };
         console.log(data); 
         
-        this.setState({
+        this.setState({ // setState is a function
             users: [...users, data],
             newUser: '',
         });

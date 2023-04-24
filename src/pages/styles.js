@@ -54,7 +54,9 @@ export const Name = styled.Text`
     text-align: center;
 `;
 
-export const Bio = styled.Text`
+export const Bio = styled.Text.attrs({
+    numberOfLines: 2,
+})`
     font-size: 13px;
     line-height: 18px;
     color: #999;
