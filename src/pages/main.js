@@ -15,9 +15,9 @@ import {
   ProfileButtonText,
 } from './styles';
 import api from '../services/api';
-import {Keyboard, ActivityIndicator} from 'react-native';
+import {Keyboard, ActivityIndicator, Alert} from 'react-native';
 
-export default class Main extends Component { 
+export default class Main extends Component {
   state = {
     // state is an object
     newUser: '',
@@ -25,23 +25,27 @@ export default class Main extends Component {
     loading: false,
   };
 
-    async componentDidMount() { // busca os dados do AsyncStorage
+  async componentDidMount() {
+    // busca os dados do AsyncStorage
     const users = await AsyncStorage.getItem('users'); // get users para AsyncStorage
 
     if (users) {
       this.setState({users: JSON.parse(users)}); // set users para state
     }
-}
+  }
 
-    async componentDidUpdate(_, prevState) { // salva os dados no AsyncStorage
+  async componentDidUpdate(_, prevState) {
+    // salva os dados no AsyncStorage
     const {users} = this.state; // desestruturando
 
     if (prevState.users !== users) {
-       await AsyncStorage.setItem('users', JSON.stringify(users)); // set users para AsyncStorage
+      await AsyncStorage.setItem('users', JSON.stringify(users)); // set users para AsyncStorage
     }
-}
+  }
 
-  handleAddUser = async () => { // adiciona um novo usuário
+  handleAddUser = async () => {
+    try{
+    // adiciona um novo usuário
     const {users, newUser} = this.state; // desestruturando
 
     this.setState({loading: true}); // setando o loading para true
@@ -59,22 +63,27 @@ export default class Main extends Component {
 
     this.setState({
       // setState is a function
-      users: [...users, data],
+      users: [data, ...users],
       newUser: '',
       loading: false,
     });
 
     Keyboard.dismiss();
-  };
+
+  }catch (error) {
+      alert("Usuário não encontrado");
+      this.state({loading: false});
+  }
+}
 
   render() {
     const {users, newUser, loading} = this.state; // desestruturando
 
     return (
-      <Container> 
+      <Container>
         <Form>
           <Input
-            autoCorrect={false} 
+            autoCorrect={false}
             autoCapitalize="none"
             placeholder="Adicionar usuário"
             value={newUser}
@@ -83,8 +92,11 @@ export default class Main extends Component {
             onSubmitEditing={this.handleAddUser}
           />
           <SubmitButton loading={loading} onPress={this.handleAddUser}>
-            {loading ? (<ActivityIndicator color="#fff" />) : (
-            <Icon name="add" size={20} color="#fff" />)}
+            {loading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Icon name="add" size={20} color="#fff" />
+            )}
           </SubmitButton>
         </Form>
         <List
@@ -97,8 +109,20 @@ export default class Main extends Component {
               <Name>{item.name}</Name>
               <Bio>{item.bio}</Bio>
 
-              <ProfileButton onPress={() => {}}>
+              <ProfileButton onPress={() => {
+                this.props.navigation
+              }}>
                 <ProfileButtonText>Ver perfil</ProfileButtonText>
+              </ProfileButton>
+
+              <ProfileButton
+                onPress={() => {
+                  this.setState({
+                    users: users.filter(user => user.login !== item.login),
+                  }); // filtra os usuários
+                }}
+                style={{backgroundColor: '#ffc0cb'}}>
+                <ProfileButtonText>Excluir</ProfileButtonText>
               </ProfileButton>
             </User>
           )}
