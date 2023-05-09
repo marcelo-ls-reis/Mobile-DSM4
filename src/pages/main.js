@@ -1,4 +1,5 @@
 import React, {Component} from 'react';
+import {Keyboard, ActivityIndicator} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import {
@@ -15,69 +16,62 @@ import {
   ProfileButtonText,
 } from './styles';
 import api from '../services/api';
-import {Keyboard, ActivityIndicator, Alert} from 'react-native';
 
 export default class Main extends Component {
   state = {
-    // state is an object
     newUser: '',
     users: [],
     loading: false,
   };
 
   async componentDidMount() {
-    // busca os dados do AsyncStorage
-    const users = await AsyncStorage.getItem('users'); // get users para AsyncStorage
+    //busca os dados do storage
+    const users = await AsyncStorage.getItem('users');
 
     if (users) {
-      this.setState({users: JSON.parse(users)}); // set users para state
+      this.setState({users: JSON.parse(users)});
     }
   }
 
   async componentDidUpdate(_, prevState) {
-    // salva os dados no AsyncStorage
-    const {users} = this.state; // desestruturando
+    //salva os dados no storage
+    const {users} = this.state;
 
     if (prevState.users !== users) {
-      await AsyncStorage.setItem('users', JSON.stringify(users)); // set users para AsyncStorage
+      await AsyncStorage.setItem('users', JSON.stringify(users));
     }
   }
 
   handleAddUser = async () => {
-    try{
-    // adiciona um novo usuário
-    const {users, newUser} = this.state; // desestruturando
+    try {
+      const {users, newUser} = this.state;
 
-    this.setState({loading: true}); // setando o loading para true
+      this.setState({loading: true});
 
-    const response = await api.get(`/users/${newUser}`); // chamando a api
+      const response = await api.get(`/users/${newUser}`);
 
-    const data = {
-      // data is an object
-      name: response.data.name,
-      login: response.data.login,
-      bio: response.data.bio,
-      avatar: response.data.avatar_url,
-    };
-    console.log(data);
+      const data = {
+        name: response.data.name,
+        login: response.data.login,
+        bio: response.data.bio,
+        avatar: response.data.avatar_url,
+      };
 
-    this.setState({
-      // setState is a function
-      users: [data, ...users],
-      newUser: '',
-      loading: false,
-    });
+      this.setState({
+        users: [data, ...users],
+        newUser: '',
+        loading: false,
+      });
 
-    Keyboard.dismiss();
-
-  }catch (error) {
-      alert("Usuário não encontrado");
-      this.state({loading: false});
-  }
-}
+      Keyboard.dismiss();
+    } catch (error) {
+      alert('Usuário não encontrado');
+      this.setState({loading: false});
+    }
+  };
 
   render() {
-    const {users, newUser, loading} = this.state; // desestruturando
+    const {users, newUser, loading} = this.state;
 
     return (
       <Container>
@@ -91,7 +85,7 @@ export default class Main extends Component {
             returnKeyType="send"
             onSubmitEditing={this.handleAddUser}
           />
-          <SubmitButton loading={loading} onPress={this.handleAddUser}>
+          <SubmitButton loadind={loading} onPress={this.handleAddUser}>
             {loading ? (
               <ActivityIndicator color="#fff" />
             ) : (
@@ -99,8 +93,9 @@ export default class Main extends Component {
             )}
           </SubmitButton>
         </Form>
+
         <List
-          showsVerticalScrollIndicator={false}
+          showVerticalScrollIndicator={false}
           data={users}
           keyExtractor={user => user.login}
           renderItem={({item}) => (
@@ -109,9 +104,10 @@ export default class Main extends Component {
               <Name>{item.name}</Name>
               <Bio>{item.bio}</Bio>
 
-              <ProfileButton onPress={() => {
-                this.props.navigation
-              }}>
+              <ProfileButton
+                onPress={() => {
+                  this.props.navigation.navigate('user', {user: item});
+                }}>
                 <ProfileButtonText>Ver perfil</ProfileButtonText>
               </ProfileButton>
 
@@ -119,7 +115,7 @@ export default class Main extends Component {
                 onPress={() => {
                   this.setState({
                     users: users.filter(user => user.login !== item.login),
-                  }); // filtra os usuários
+                  });
                 }}
                 style={{backgroundColor: '#ffc0cb'}}>
                 <ProfileButtonText>Excluir</ProfileButtonText>
